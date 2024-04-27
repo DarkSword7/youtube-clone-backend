@@ -303,6 +303,15 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Avatar file is required");
     }
 
+    // Delete previous avatar from cloudinary
+    if (req.user.avatar) {
+        const previousAvatarPublicId = req.user.avatar
+            .split("/")
+            .pop()
+            .split(".")[0];
+        await deleteFromCloudinary(previousAvatarPublicId);
+    }
+
     const avatar = await uploadOnCloudinary(avatarLocalPath);
 
     if (!avatar.url) {
@@ -336,6 +345,15 @@ const updateUserCoverImage = asyncHandler(async (req, res) => {
 
     if (!coverImage.url) {
         throw new ApiError(400, "Error while uploading cover image");
+    }
+
+    // Delete previous coverImage from cloudinary
+    if (req.user.coverImage) {
+        const previousCoverImagePublicId = req.user.coverImage
+            .split("/")
+            .pop()
+            .split(".")[0];
+        await deleteFromCloudinary(previousCoverImagePublicId);
     }
 
     const user = await User.findByIdAndUpdate(
